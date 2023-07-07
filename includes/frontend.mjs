@@ -41,6 +41,13 @@ export async function init(resources, icon_model_url, quantity_model_url) {
   document.querySelector('select[name=definition]').addEventListener('change', () => {
     outputTotals();
   });
+  document.querySelector('input[name=filter-full]').addEventListener('change', (e) => {
+    if(e.target.checked) {
+      document.querySelector('#pyramid').classList.add('filter-full');
+    } else {
+      document.querySelector('#pyramid').classList.remove('filter-full');
+    }
+  });
 }
 
 export function registerDefaultListeners() {
@@ -608,16 +615,20 @@ function outputTotals() {
 
     row.map(([CodeNames, desired]) => {
       // Items (including groups of items)
+      let desiredCrates = desired;
       const itemNames = CodeNames.split(',');
       const itemDiv = document.createElement('div');
       itemDiv.classList.add('item');
 
       let total = 0;
+      let totalCrates = 0;
       for (const itemName of itemNames) {
         let item = totals[itemName];
+        const catalogItem = res.CATALOG.find(e=>e.CodeName == itemName);
+        const crateAmount = catalogItem.ItemDynamicData.QuantityPerCrate
+
         // Fallback item definition and image
         if(!item) {
-          const catalogItem = res.CATALOG.find(e=>e.CodeName == itemName);
           if (!catalogItem) {
             console.error(`${itemName} missing from catalog`);
             continue;
@@ -629,7 +640,9 @@ function outputTotals() {
             total: 0
           };
         }
+        desiredCrates = Math.ceil(desired / crateAmount);
         total += item.total;
+        totalCrates += Math.floor(total / crateAmount)
         itemDiv.classList.add(item.category);
         itemDiv.title = itemDiv.title + `${item.name} or\n`
 
@@ -650,7 +663,7 @@ function outputTotals() {
       if(format === 'required'){
         labelSpan.textContent = `${desired - total}`;
       } else if(format === 'crates'){
-        labelSpan.textContent = `${Math.ceil((desired - total) * 0.1)}c`;
+        labelSpan.textContent = `${Math.ceil((desiredCrates - totalCrates))}c`;
       } else if(format === 'current'){
         labelSpan.textContent = `${total}`;
       } else {
