@@ -563,7 +563,7 @@ function outputTotals() {
   // Pyramid  start
   const pyramid = document.querySelector('div#pyramid');
   const pyramidDef = [
-    [['SoldierUniformW', 200], ['Cloth', 1500]],
+    [['SoldierSupplies', 200], ['Cloth', 1500]],
     [['RifleLightW,RifleW', 100], ['RifleAmmo', 200], ['Bandages', 200]],
     [['ATGrenadeW,StickyBomb', 60], ['GreenAsh', 100], ['FirstAidKit', 30], ['TraumaKit', 30], ['BloodPlasma', 150], ['MedicUniformW', 30]],
     [['HEGrenade', 80], ['GasMask', 60], ['GasMaskFilter', 100], ['SMGW', 60], ['SMGAmmo', 160], ['GrenadeW', 80], ['WorkWrench', 20], ['SnowUniformW', 20]],
