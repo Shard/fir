@@ -398,7 +398,7 @@ function addImages(files) {
   imagesTotal += files.length;
 
   const collage = document.querySelector('div.render');
-  document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
+  document.querySelector('.processing-status span').textContent = imagesProcessed + " of " + imagesTotal;
 
   files.forEach(function(file) {
     const container = document.createElement('div');
@@ -459,7 +459,7 @@ function getProcessImage(label, lastModified) {
 
     this.style.display = '';
     ++imagesProcessed;
-    document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
+    document.querySelector('.processing-status span').textContent = imagesProcessed + " of " + imagesTotal;
 
     if (imagesProcessed == imagesTotal) {
       window.stockpiles = stockpiles;
@@ -543,6 +543,7 @@ function outputTotals() {
       totals[key].collection.push(element);
     }
   }
+  console.log(totals)
 
   const categoryOrder = {
     SmallArms: 1,
@@ -558,6 +559,77 @@ function outputTotals() {
   const sortedCategories = Object.keys(categories).sort(function(a, b) {
     return (categoryOrder[a] || Infinity) - (categoryOrder[b] || Infinity);
   });
+
+  // Pyramid  start
+  const pyramid = document.querySelector('div#pyramid');
+  const pyramidDef = [
+    [['SoldierUniformW', 200], ['Cloth', 1500]],
+    [['RifleLightW,RifleW', 100], ['RifleAmmo', 200], ['Bandages', 200]],
+    [['ATGrenadeW,StickyBomb', 60], ['GreenAsh', 100], ['FirstAidKit', 30], ['TraumaKit', 30], ['BloodPlasma', 150], ['MedicUniformW', 30]],
+    [['HEGrenade', 80], ['GasMask', 60], ['GasMaskFilter', 100], ['SMGW', 60], ['SMGAmmo', 160], ['GrenadeW', 80], ['WorkWrench', 20], ['SnowUniformW', 20]],
+    [['RpgW,RPGTW', 15], ['RpgAmmo', 75], ['ATRPGTW,ATRifleW', 15], ['ATRPGAmmo,ATRifleAmmo', 60], ['Tripod', 20], ['Shovel', 20], ['AmmoUniformW', 30]],
+    [['MGTW', 10], ['MGAmmo', 60], ['RifleLongW', 30], ['Bayonet', 60], ['GrenadeAdapter', 20], ['Radio', 25], ['Binoculars', 20], ['ATAmmo', 60]],
+    [['Mortar', 15], ['MortarAmmo', 100], ['MortarAmmoFL', 100], ['MortarAmmoSH', 50], ['ATRPGTW', 10], ['LightTankAmmo', 100], ['TankUniformW', 30]],
+    [['AssaultRifleW', 30], ['AssaultRifleAmmo', 80], ['TankMine', 50], ['BarbedWireMaterials', 40], ['SandbagMaterials',  40],  ['SatchelChargeW', 40], ['SmokeGrenade', 40], ['ScoutUniformW', 15]],
+  ];
+
+  pyramidDef.map(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('row');
+
+    row.map(([CodeNames, quantity]) => {
+      // Items (including groups of items)
+      const itemNames = CodeNames.split(',');
+      const itemDiv = document.createElement('div');
+      itemDiv.classList.add('item');
+
+      let total = 0;
+      for (const itemName of itemNames) {
+        let item = totals[itemName];
+        // Fallback item definition and image
+        if(!item) {
+          const catalogItem = res.CATALOG.find(e=>e.CodeName == itemName);
+          if (!catalogItem) {
+            console.log(`${itemName} missing from catalog`);
+            continue;
+          }
+          item = {category: (catalogItem.ItemCategory || '').replace(/^EItemCategory::/, ''), name: catalogItem.CodeName || itemName, total: 0};
+        }
+        total += item.total;
+        itemDiv.classList.add(item.category);
+        itemDiv.title = itemDiv.title + `${item.name}, `
+
+        // Icon Image
+        if( item.collection ){
+          itemDiv.appendChild(item.collection[0].iconBox.canvas)
+        } else {
+          const fallbackImg = document.createElement('img');
+          fallbackImg.src = `./foxhole/inferno/icons/${item.name}.png`;
+          fallbackImg.width = 42;
+          fallbackImg.height = 42;
+          fallbackImg.alt = item.name;
+          itemDiv.appendChild(fallbackImg);
+        }
+      }
+      // Finish Icon Grouping
+      const labelSpan = document.createElement('span');
+      labelSpan.textContent = `${quantity - total}`;
+      itemDiv.appendChild(labelSpan);
+      itemDiv.title = itemDiv.title.slice(0, -2);
+
+      // Status
+      if(total < quantity / 2) {
+        itemDiv.classList.add('depleted');
+      } else if (total < quantity) {
+        itemDiv.classList.add('low');
+      } else {
+        itemDiv.classList.add('full');
+      }
+      rowDiv.appendChild(itemDiv);
+    });
+    pyramid.appendChild(rowDiv);
+  });
+  // Pyramid  end
 
   const report = document.querySelector('div.report');
   report.innerHTML = '';
@@ -602,7 +674,7 @@ function outputTotals() {
       quantity.textContent = type.total;
       cell.appendChild(quantity);
 
-      cell.appendChild(type.collection[0].iconBox.canvas);
+      //cell.appendChild(type.collection[0].iconBox.canvas);
 
       const name = document.createElement('div');
       name.textContent = type.name;
