@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Foxhole Inventory Report</title>
+  <title>Foxhole Logi Pyramid Report</title>
   <meta charset="utf-8" />
-  <meta name="description" content="Processes stockpile screenshots to produce graphical and spreadsheet reports." />
+  <meta name="description" content="Calculate your logi deliveries with screenshots" />
   <meta name="referrer" content="same-origin" />
 
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
@@ -37,13 +37,27 @@
 <body>
   <h2>Foxhole Pyramid Report</h2>
   <p>Paste or upload a screenshot of a base showing the inventory</p>
-      <form>
-        <label>
-          <input accept="image/*" type="file" multiple>
-        </label>
-      </form>
-      <div class='processing-status'>Processed: <span>0 of 0</span></div>
-  <h3>Items Required:</h3>
+  <div class='top-menu'>
+    <button class="reset-pyramid">Reset</button>
+    <select name='definition'>
+      <option disabled>Pyramid Definition</option>
+      <option value='fmat'>FMAT</option>
+      <option value='fmatBasic'>FMAT Basic</option>
+    </select>
+    <select name='format'>
+      <option disabled>Metric Format</option>
+      <option value='required'>Items Required</option>
+      <option value='current'>Current Items</option>
+      <!-- <option value='crates'>Crates Required</option> -->
+      <option value='current-desired'>Current / Desired</option>
+    </select>
+  </div>
+  <form>
+    <label>
+      <input accept="image/*" type="file" multiple>
+    </label>
+  </form>
+  <div class='processing-status'>Processed: <span>0 of 0</span></div>
   <div id="pyramid">
 
   </div>
@@ -60,18 +74,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      font-family: Courier, monospace;
     }
-    #pyramid > div {
+    #pyramid .row {
       display: flex;
       flex-direction: row;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
-    #pyramid > div > div {
+    #pyramid .item {
         margin-right: 4px;
-    }
-    #pyramid > div > div:hover {
-        background-colo
+        overflow: hidden;
+        height: 42px;
     }
     #pyramid .depleted{ background-color:red; }
     #pyramid .depleted:hover{ background-color:darkred; }
@@ -79,13 +93,27 @@
     #pyramid .low:hover{ background-color:darkorange; }
     #pyramid .full{ background-color:green; }
     #pyramid .full:hover{ background-color:darkgreen; }
+    #pyramid.empty .item{ background-color:#191919; }
+    #pyramid.empty .item:hover{ background-color:#333; }
     #pyramid > div canvas, #pyramid > div img{float:left;}
     #pyramid > div span{
         line-height: 34px;
-        padding: 4px;
+        padding: 8px;
         min-width: 20px;
         display: inline-block;
         text-align: center;
+        font-weight: bold;
+    }
+    .render{ margin: 20px auto; }
+    body:last-child::after{display:none;}
+    div.render{height: auto;background:black;resize:none;}
+    .processing-status{
+        display:none;
+    }
+    .top-menu{
+        position: fixed;
+        top: 5px;
+        right: 5px;
     }
   </style>
 </body>

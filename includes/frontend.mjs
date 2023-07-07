@@ -27,6 +27,20 @@ export async function init(resources, icon_model_url, quantity_model_url) {
       res[key] = results[index++];
     }
   });
+  outputTotals();
+  document.querySelector('.reset-pyramid').addEventListener('click', () => {
+    stockpiles = [];
+    imagesProcessed = 0;
+    imagesTotal = 0;
+    document.querySelector('.render').innerHTML = '';
+    outputTotals();
+  });
+  document.querySelector('select[name=format]').addEventListener('change', () => {
+    outputTotals();
+  });
+  document.querySelector('select[name=definition]').addEventListener('change', () => {
+    outputTotals();
+  });
 }
 
 export function registerDefaultListeners() {
@@ -38,7 +52,13 @@ export function registerDefaultListeners() {
   window.addEventListener('paste', function(event) {
     const files = event.clipboardData.files || [];
     const images = Array.prototype.filter.call(files, f => f.type.startsWith('image/'));
-    gtag('event', 'select_content', {content_type: 'paste_screenshots', item_id: `ss_count_${images.length}`});
+    if(images.length === 0) {
+      return;
+    }
+    stockpiles = [];
+    imagesProcessed = 0;
+    imagesTotal = 0;
+
     addImages(images);
   });
 }
@@ -51,8 +71,6 @@ export function addInputListener(input) {
     stockpiles = [];
     imagesProcessed = 0;
     imagesTotal = 0;
-
-    document.querySelector('div.render').innerHTML = '';
 
     const files = Array.from(this.files).sort(function(a, b) {
       // Consistent ordering based on when each screenshot was captured
@@ -402,18 +420,13 @@ function addImages(files) {
 
   files.forEach(function(file) {
     const container = document.createElement('div');
-    const label = document.createElement('span');
-    label.textContent = file.name;
-    label.contentEditable = true;
-    label.spellcheck = false;
-    container.appendChild(label);
 
     const image = document.createElement('img');
     image.style.display = 'none';
-    image.addEventListener('load', getProcessImage(label, file.lastModified), { once: true });
+    image.addEventListener('load', getProcessImage('@@UNUSED', file.lastModified), { once: true });
     image.src = URL.createObjectURL(file);
     container.appendChild(image);
-
+    collage.innerHTML = '<span>Processing Screenshot...</span>';
     collage.appendChild(container);
   });
 }
@@ -439,7 +452,7 @@ function getProcessImage(label, lastModified) {
     return processImage.call(this, label, lastModified);
   };
 
-  async function processImage(label, lastModified) {
+  async function processImage(_label, lastModified) {
     URL.revokeObjectURL(this.src);
 
     const canvas = document.createElement('canvas');
@@ -451,8 +464,8 @@ function getProcessImage(label, lastModified) {
 
     const stockpile = await Screenshot.process(canvas, ICON_MODEL_URL, res.ICON_CLASS_NAMES, QUANTITY_MODEL_URL, res.QUANTITY_CLASS_NAMES);
     if (stockpile) {
+      document.querySelector('div.render span').remove();
       this.src = stockpile.box.canvas.toDataURL();
-      stockpile.label = label;
       stockpile.lastModified = lastModified;
       stockpiles.push(stockpile);
     }
@@ -465,7 +478,7 @@ function getProcessImage(label, lastModified) {
       window.stockpiles = stockpiles;
       window.stockpilesJSON = JSON.stringify(stockpiles.map(function(s) {
         return {
-          file: s.label.textContent.trim(),
+          file: 'base',
           box: {
             x: s.box.x,
             y: s.box.y,
@@ -543,7 +556,6 @@ function outputTotals() {
       totals[key].collection.push(element);
     }
   }
-  console.log(totals)
 
   const categoryOrder = {
     SmallArms: 1,
@@ -561,8 +573,18 @@ function outputTotals() {
   });
 
   // Pyramid  start
+  const format = document.querySelector('select[name=format]').value;
+  const definition = document.querySelector('select[name=definition]').value;
   const pyramid = document.querySelector('div#pyramid');
-  const pyramidDef = [
+  pyramid.innerHTML = '';
+  if(Object.keys(totals).length === 0){
+    pyramid.classList.add('empty');
+  } else {
+    pyramid.classList.remove('empty');
+  }
+
+  const pyramidDefs = {}
+  pyramidDefs.fmat = [
     [['SoldierSupplies', 200], ['Cloth', 1500]],
     [['RifleLightW,RifleW', 100], ['RifleAmmo', 200], ['Bandages', 200]],
     [['ATGrenadeW,StickyBomb', 60], ['GreenAsh', 100], ['FirstAidKit', 30], ['TraumaKit', 30], ['BloodPlasma', 150], ['MedicUniformW', 30]],
@@ -572,12 +594,19 @@ function outputTotals() {
     [['Mortar', 15], ['MortarAmmo', 100], ['MortarAmmoFL', 100], ['MortarAmmoSH', 50], ['ATRPGTW', 10], ['LightTankAmmo', 100], ['TankUniformW', 30]],
     [['AssaultRifleW', 30], ['AssaultRifleAmmo', 80], ['TankMine', 50], ['BarbedWireMaterials', 40], ['SandbagMaterials',  40],  ['SatchelChargeW', 40], ['SmokeGrenade', 40], ['ScoutUniformW', 15]],
   ];
+  pyramidDefs.fmatBasic = [
+    [['SoldierSupplies', 100], ['Cloth', 1000]],
+    [['RifleW', 60], ['RifleAmmo', 120], ['Bandages', 100]],
+    [['StickyBomb', 30], ['GreenAsh', 40], ['FirstAidKit', 10], ['TraumaKit', 10], ['BloodPlasma', 50], ['MedicUniformW', 15]],
+    [['HEGrenade', 40], ['GasMask', 20], ['GasMaskFilter', 40], ['SMGW', 20], ['SMGAmmo', 80], ['GrenadeW', 40], ['WorkWrench', 10]],
+  ];
 
+  const pyramidDef = pyramidDefs[definition] || pyramidDefs.fmat;
   pyramidDef.map(row => {
     const rowDiv = document.createElement('div');
     rowDiv.classList.add('row');
 
-    row.map(([CodeNames, quantity]) => {
+    row.map(([CodeNames, desired]) => {
       // Items (including groups of items)
       const itemNames = CodeNames.split(',');
       const itemDiv = document.createElement('div');
@@ -590,21 +619,26 @@ function outputTotals() {
         if(!item) {
           const catalogItem = res.CATALOG.find(e=>e.CodeName == itemName);
           if (!catalogItem) {
-            console.log(`${itemName} missing from catalog`);
+            console.error(`${itemName} missing from catalog`);
             continue;
           }
-          item = {category: (catalogItem.ItemCategory || '').replace(/^EItemCategory::/, ''), name: catalogItem.CodeName || itemName, total: 0};
+          item = {
+            category: (catalogItem.ItemCategory || '').replace(/^EItemCategory::/, ''),
+            name: catalogItem.DisplayName || itemName,
+            CodeName: itemName,
+            total: 0
+          };
         }
         total += item.total;
         itemDiv.classList.add(item.category);
-        itemDiv.title = itemDiv.title + `${item.name}, `
+        itemDiv.title = itemDiv.title + `${item.name} or\n`
 
         // Icon Image
         if( item.collection ){
           itemDiv.appendChild(item.collection[0].iconBox.canvas)
         } else {
           const fallbackImg = document.createElement('img');
-          fallbackImg.src = `./foxhole/inferno/icons/${item.name}.png`;
+          fallbackImg.src = `./foxhole/inferno/icons/${item.CodeName}.png`;
           fallbackImg.width = 42;
           fallbackImg.height = 42;
           fallbackImg.alt = item.name;
@@ -613,14 +647,22 @@ function outputTotals() {
       }
       // Finish Icon Grouping
       const labelSpan = document.createElement('span');
-      labelSpan.textContent = `${quantity - total}`;
+      if(format === 'required'){
+        labelSpan.textContent = `${desired - total}`;
+      } else if(format === 'crates'){
+        labelSpan.textContent = `${Math.ceil((desired - total) * 0.1)}c`;
+      } else if(format === 'current'){
+        labelSpan.textContent = `${total}`;
+      } else {
+        labelSpan.textContent = `${total} / ${desired}`;
+      }
       itemDiv.appendChild(labelSpan);
-      itemDiv.title = itemDiv.title.slice(0, -2);
+      itemDiv.title = itemDiv.title.trim().slice(0, -2).trim();
 
       // Status
-      if(total < quantity / 2) {
+      if(total < desired / 2) {
         itemDiv.classList.add('depleted');
-      } else if (total < quantity) {
+      } else if (total < desired) {
         itemDiv.classList.add('low');
       } else {
         itemDiv.classList.add('full');
