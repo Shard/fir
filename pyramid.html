@@ -66,10 +66,16 @@
   <div class="render"></div>
   <div style="display:none" class="report"></div>
   </div>
+  <footer>
+    <p>Created by [82DK]BagOfDoom using <a href="https://github.com/GICodeWarrior/fir">fir</a></p>
+    <p>Suggestions and issues can be posted on <a href="https://github.com/Shard/fir/issues">github</a></p>
+    <p><a href="https://www.foxholegame.com/">Foxhole</a> and it's IP is owned by <a href="https://www.siegecamp.com/">Siege Camp</a></p>
+  </footer>
   <style>
     body{
         background: black;
         color: white;
+        font-family: sans-serif;
     }
     #pyramid {
       display: flex;
@@ -109,7 +115,9 @@
     body:last-child::after{display:none;}
     div.render{height: auto;background:black;resize:none;}
     .processing-status{
-        display:none;
+        position: fixed;
+        bottom: 5px;
+        right: 5px;
     }
     .top-menu{
         position: fixed;
@@ -122,6 +130,16 @@
     #pyramid.filter-full .item.full{
         display:none;
     }
+    footer{
+        text-align: center;
+        font-size: 10px;
+    }
+    footer p{
+        margin: 0 0 2px 0;
+    }
+    a{ background:black; color: lightblue; }
+    a:visted{ color: lightblue; }
+    a:hover{text-decoration:none;}
   </style>
 </body>
 </html>
