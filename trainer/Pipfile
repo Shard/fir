@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tensorflow = "~=2.12.0"
+tensorflowjs = ">=4.7.0"
+nvidia-cudnn-cu11 = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
