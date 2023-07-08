@@ -1,4 +1,5 @@
 import Screenshot from './screenshot.mjs'
+import { copyDefs } from './dk.mjs'
 
 let res = {};
 let ICON_MODEL_URL = "";
@@ -35,6 +36,32 @@ export async function init(resources, icon_model_url, quantity_model_url) {
     document.querySelector('.render').innerHTML = '';
     outputTotals();
   });
+  // 82DK Stockpile tracking
+  document.querySelector('.copy-stockpile').addEventListener('click', () => {
+    const stockpile = stockpiles[0];
+    console.log('stockpile', stockpiles[0])
+    console.log('defs', copyDefs);
+    console.log(res.CATALOG)
+    //return;
+    let text = '';
+    copyDefs.forEach(function([SheetName, CodeName]) {
+      /*if(CodeName){ return; }
+      const result = res.CATALOG.find(e => e.DisplayName.toLowerCase() == SheetName.toLowerCase())
+      if(!result){ return; }
+      console.log(SheetName, result.CodeName)
+      return;*/
+      const details = res.CATALOG.find(e => e.CodeName == CodeName);
+      if(!details){
+        text += "x\n";
+        return;
+      }
+      const inventory = stockpile.contents.find(e => e.CodeName == CodeName);
+      const amountStored = inventory ? inventory.quantity : 0;
+      text += amountStored + "\n";
+    });
+    copyTextToClipboard(text.trim());
+  })
+
   document.querySelector('select[name=format]').addEventListener('change', () => {
     outputTotals();
   });
@@ -47,6 +74,42 @@ export async function init(resources, icon_model_url, quantity_model_url) {
     } else {
       document.querySelector('#pyramid').classList.remove('filter-full');
     }
+  });
+
+}
+
+function fallbackCopyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Fallback: Copying text command was ' + msg);
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+
+  document.body.removeChild(textArea);
+}
+function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Async: Copying to clipboard was successful!');
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
   });
 }
 
