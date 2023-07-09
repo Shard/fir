@@ -126,5 +126,5 @@ export const copyDefs = [
   ["Bmats", "Cloth"],
   ["Emats", "Explosive"],
   ["Hemats", "HeavyExplosive"],
-  //["Rmats", ""] Removed due to sheet restrictions on the row after prevent paste :(
+  ["Rmats", "Wood"]
 ]
