@@ -55,7 +55,7 @@ export async function init(resources, icon_model_url, quantity_model_url) {
         text += "x\n";
         return;
       }
-      const inventory = stockpile.contents.find(e => e.CodeName == CodeName);
+      const inventory = stockpile.contents.find(e => e.CodeName == CodeName && e.isCrated === true);
       const amountStored = inventory ? inventory.quantity : 0;
       text += amountStored + "\n";
     });
