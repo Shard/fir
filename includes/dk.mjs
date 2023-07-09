@@ -28,7 +28,7 @@ export const copyDefs = [
   ["ATR ammo (20mm)", "ATRifleAmmo"],
   ["Mounted bonesaw", "ATRPGTW"],
   ["Bonesaw", "ATRPGW"],
-  ["Bonesaw Ammo (ARC/RPG)", "ATRPGAmmo"],
+  ["Bonesaw Ammo (ARC/RPG)", "ATRPGIndirectAmmo"],
   ["Willows's Bane (flamethrower)", "FlameTorchW"],
   ["Tremola HE rifle grenade", "HELaunchedGrenade"], // @TODO check if correct
   ["Tripod HMG (Ratcatcher)", "MGTW"],
