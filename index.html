@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Foxhole Inventory Report</title>
+  <title>Foxhole Logi Pyramid</title>
   <meta charset="utf-8" />
-  <meta name="description" content="Processes stockpile screenshots to produce graphical and spreadsheet reports." />
+  <meta name="description" content="Calculate your logi deliveries with screenshots" />
   <meta name="referrer" content="same-origin" />
 
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="favicon.png" type="image/x-icon" />
 
   <link rel="stylesheet" href="includes/main.css" />
 
@@ -23,37 +23,118 @@
 
   <script type="module" src="includes/main.js"></script>
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C3TZNS69Y1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-C3TZNS69Y1');
-  </script>
 </head>
 <body>
-  <h2>Foxhole Inventory Report</h2>
-  <ol>
-    <li>Screenshot multiple inventories from the map view in-game.  Do this in the order you'd like them to appear in the report.</li>
-    <li>
-      <form>
-        <label>Select map screenshots: 
-          <input accept="image/*" type="file" multiple>
-        </label>
-      </form>
-    </li>
-    <li>Wait for processing to complete.
-      <div>Processed: <span>0 of 0</span></div>
-    </li>
-    <li>Edit the red titles by clicking on them.</li>
-    <li><button class="collage">Download Collage</button>
-      <button class="totals">Download Totals</button>
-      <button class="tsv">Download TSV</button>
-      <button class="append-google">Append to Google Spreadsheet (beta)</button></li>
-  </ol>
+  <h2>Foxhole Pyramid Report</h2>
+  <form>
+    <p>From the ingame map, Take a screenshot of the base inventory tooltip you want to supply.</p>
+    <label>
+      <input accept="image/*" type="file" multiple>
+    </label>
+  </form>
+  <div class='top-menu'>
+    <button class='copy-stockpile'>82dk copy</button>
+    <button class="reset-pyramid">Reset</button>
+    <label class='filter-full'>Filter Oversupplied<input name='filter-full' type='checkbox'></label>
+    <select name='definition'>
+      <option disabled>Pyramid Definition</option>
+      <option value='fmat'>FMAT</option>
+      <option value='fmatBasic'>FMAT Basic</option>
+    </select>
+    <select name='format'>
+      <option disabled>Metric Format</option>
+      <option value='required'>Items Required</option>
+      <option value='current'>Current Items</option>
+      <option value='crates'>Crates Required</option>
+      <option value='current-desired'>Current / Desired</option>
+    </select>
+  </div>
+  <div class='processing-status'>Processed: <span>0 of 0</span></div>
+  <div id="pyramid">
+
+  </div>
+  <div style="display:flex;">
   <div class="render"></div>
-  <div class="report"></div>
+  <div style="display:none" class="report"></div>
+  </div>
+  <footer>
+    <p>Created by [82DK]BagOfDoom using <a href="https://github.com/GICodeWarrior/fir">fir</a></p>
+    <p>Suggestions and issues can be posted on <a href="https://github.com/Shard/fir/issues">github</a></p>
+    <p><a href="https://www.foxholegame.com/">Foxhole</a> and it's IP is owned by <a href="https://www.siegecamp.com/">Siege Camp</a></p>
+  </footer>
+  <style>
+    body{
+        background: black;
+        color: white;
+        font-family: sans-serif;
+    }
+    h2{margin:0;}
+    #pyramid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Courier, monospace;
+    }
+    #pyramid .row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    #pyramid .item {
+        margin-right: 4px;
+        overflow: hidden;
+        height: 42px;
+    }
+    #pyramid .depleted{ background-color:red; }
+    #pyramid .depleted:hover{ background-color:darkred; }
+    #pyramid .low{ background-color:orange; }
+    #pyramid .low:hover{ background-color:darkorange; }
+    #pyramid .full{ background-color:green; }
+    #pyramid .full:hover{ background-color:darkgreen; }
+    #pyramid.empty .item{ background-color:#191919; }
+    #pyramid.empty .item:hover{ background-color:#333; }
+    #pyramid > div canvas, #pyramid > div img{float:left;}
+    #pyramid > div span{
+        line-height: 34px;
+        padding: 8px;
+        min-width: 20px;
+        display: inline-block;
+        text-align: center;
+        font-weight: bold;
+    }
+    form{text-align:center;}
+    .render{ margin: 20px auto; }
+    body:last-child::after{display:none;}
+    div.render{height: auto;background:black;resize:none;}
+    .processing-status{
+        position: fixed;
+        bottom: 5px;
+        right: 5px;
+    }
+    .top-menu{
+        position: fixed;
+        top: 8px;
+        right: 8px;
+    }
+    .filter-full{
+        display:inline-flex;
+    }
+    #pyramid.filter-full .item.full{
+        display:none;
+    }
+    footer{
+        text-align: center;
+        font-size: 10px;
+    }
+    footer p{
+        margin: 0 0 2px 0;
+    }
+    a{ background:black; color: lightblue; }
+    a:visted{ color: lightblue; }
+    a:hover{text-decoration:none;}
+    input[type=file]{padding:8px;margin:0 auto 12px auto;}
+    input[type=file]:hover{background:#222;}
+  </style>
 </body>
 </html>

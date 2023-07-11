@@ -5,7 +5,7 @@ This tool analyses screenshots from [Foxhole](https://www.foxholegame.com/about-
 
 1. Open the map and hover the the base you want to supply
 2. Take a screenshot
-3. Paste it into https://shard.github.io/fir/pyramid.html
+3. Paste it into https://pyramid.82dk.net
 4. Profit
 
 ## Status

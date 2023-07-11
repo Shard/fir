@@ -44,18 +44,23 @@ export async function init(resources, icon_model_url, quantity_model_url) {
     console.log(res.CATALOG)
     //return;
     let text = '';
+    console.log(stockpile)
     copyDefs.forEach(function([SheetName, CodeName]) {
+      //console.log(CodeName);
       /*if(CodeName){ return; }
       const result = res.CATALOG.find(e => e.DisplayName.toLowerCase() == SheetName.toLowerCase())
       if(!result){ return; }
       console.log(SheetName, result.CodeName)
       return;*/
       const details = res.CATALOG.find(e => e.CodeName == CodeName);
+
       if(!details){
         text += "x\n";
+        console.warn('No details found for', SheetName, CodeName);
         return;
       }
       const inventory = stockpile.contents.find(e => e.CodeName == CodeName && e.isCrated === true);
+      //console.log(CodeName, inventory);
       const amountStored = inventory ? inventory.quantity : 0;
       text += amountStored + "\n";
     });
@@ -147,37 +152,12 @@ export function addInputListener(input) {
       return a.lastModified - b.lastModified;
     });
 
-    gtag('event', 'select_content', {content_type: 'open_screenshots', item_id: `ss_count_${files.length}`});
     addImages(files);
-  });
-}
-
-export function addDownloadCollageListener(downloadCollage) {
-  downloadCollage.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_collage'});
-    const collage = document.querySelector('div.render');
-    html2canvas(collage, {
-      width: collage.scrollWidth,
-      height: collage.scrollHeight,
-      windowWidth: collage.scrollWidth + 16,
-      windowHeight: collage.scrollHeight + 16,
-    }).then(function(canvas) {
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL();
-
-      const time = new Date();
-      link.download = time.toISOString() + "_" + 'foxhole-inventory-collage.png';
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
   });
 }
 
 export function addDownloadTotalsListener(downloadTotals) {
   downloadTotals.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_totals'});
     const totals = document.querySelector('div.report');
     html2canvas(totals, {
       width: totals.scrollWidth,
@@ -200,7 +180,6 @@ export function addDownloadTotalsListener(downloadTotals) {
 
 export function addDownloadTSVListener(downloadTSV) {
   downloadTSV.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_tsv'});
     const items = [[
       'Stockpile Title',
       'Stockpile Name',
@@ -350,136 +329,6 @@ export function getAppendGoogleRows(format="gapi") {
     }
   }
   return rows;
-}
-
-export async function addAppendGoogleListener(appendGoogle) {
-  appendGoogle.addEventListener('click', async function() {
-    gtag('event', 'select_content', {content_type: 'append_google', item_id: 'append_google'});
-
-    const authPromise = new Promise(function(resolve, reject) {
-      tokenClient.callback = (resp) => {
-        if (resp.error !== undefined) {
-          reject(resp);
-        }
-        //console.log('gapi.client access token: ' + JSON.stringify(gapi.client.getToken()));
-        resolve(resp);
-      };
-    });
-    tokenClient.requestAccessToken();
-    await authPromise;
-
-    const pickerData = await new Promise(function(resolve, reject) {
-      const picker = new google.picker.PickerBuilder()
-        .addView(google.picker.ViewId.SPREADSHEETS)
-        .enableFeature(google.picker.Feature.NAV_HIDDEN)
-        .setOAuthToken(gapi.client.getToken().access_token)
-        .setDeveloperKey(gIds().apiKey)
-        .setAppId(gIds().appId)
-        .setCallback(function(data) {
-          if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
-            resolve(data);
-          } else if (data[google.picker.Response.ACTION] == google.picker.Action.CANCEL) {
-            reject();
-          }
-        })
-        .build();
-      picker.setVisible(true);
-    });
-    const spreadsheetId = pickerData[google.picker.Response.DOCUMENTS][0][google.picker.Document.ID];
-    //console.log(pickerData);
-    //console.log(pickerData[google.picker.Response.DOCUMENTS][0][google.picker.Document.ID]);
-
-    const spreadsheetResponse = await gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: spreadsheetId,
-    });
-    //console.log(spreadsheetResponse);
-
-    const sheetName = 'fir';
-    const sheet = spreadsheetResponse.result.sheets.find( s => s.properties.title == sheetName);
-    const columns = [
-      'Export Time',
-      'Screenshot Time',
-      'Structure Type',
-      'Stockpile Name',
-      'Stockpile Title',
-      'CodeName',
-      'Name',
-      'Quantity',
-      'Crated?',
-      'ID',
-    ].map( c => stringValue(c) );
-
-    let rows = getAppendGoogleRows();
-
-    let sheetId;
-    if (sheet) {
-      sheetId = sheet.properties.sheetId;
-    }
-    else {
-      sheetId = Math.floor(Math.random() * 1000000000);
-
-      const addSheetResponse = await gapi.client.sheets.spreadsheets.batchUpdate({
-        spreadsheetId: spreadsheetId,
-      }, {
-        requests: [{
-          addSheet: {
-            properties: {
-              sheetId,
-              title: sheetName,
-              index: 0,
-              gridProperties: {
-                frozenRowCount: 1,
-                rowCount: 2,
-                columnCount: columns.length + 1,
-              },
-            },
-          },
-        }, {
-          appendCells: {
-            sheetId: sheetId,
-            fields: '*',
-            rows: [{
-              values: columns,
-            }],
-          },
-        }]
-      });
-      //console.log(addSheetResponse);
-    }
-
-    const appendCellsResponse = await gapi.client.sheets.spreadsheets.batchUpdate({
-      spreadsheetId: spreadsheetId,
-    }, {
-      requests: [{
-        appendCells: {
-          sheetId: sheetId,
-          fields: '*',
-          rows,
-        },
-      }],
-    });
-    //console.log(appendCellsResponse);
-  });
-
-  await Promise.all([
-    new Promise((res, rej) => gapi.load('client', {callback: res, onerror: rej})),
-    new Promise((res, rej) => gapi.load('picker', {callback: res, onerror: rej})),
-  ]);
-  await gapi.client.init({}).then(function() {
-    gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
-  });
-
-  const tokenClient = await new Promise((resolve, reject) => {
-    try {
-      resolve(google.accounts.oauth2.initTokenClient({
-          client_id: gIds().clientId,
-          scope: 'https://www.googleapis.com/auth/drive.file',
-          //prompt: 'consent',
-      }));
-    } catch (err) {
-      reject(err);
-    }
-  });
 }
 
 function addImages(files) {
