@@ -50,12 +50,13 @@
     </select>
   </div>
   <div class='processing-status'>Processed: <span>0 of 0</span></div>
-  <div id="pyramid">
-
+  <div id="pyramid"></div>
+  <div id="pyramid-footnote">
+    <span class='snow'>*</span> Only supply when snowing in region.
   </div>
   <div style="display:flex;">
-  <div class="render"></div>
-  <div style="display:none" class="report"></div>
+    <div class="render"></div>
+    <div style="display:none" class="report"></div>
   </div>
   <footer>
     <p>Created by [82DK]BagOfDoom using <a href="https://github.com/GICodeWarrior/fir">fir</a></p>
@@ -70,7 +71,8 @@
       <p>The number displayed depends on the format selected, but by default represents the amount of items left to deliver once a valid screenshot has been provided.</p>
       <p>Not every item is displayed as it either too niche or cannot fit in a dunne truck such as firetrucks or emplacements.</p>
       <h3>It's not working!</h3>
-      <p>The technology involved uses machine learning image recongintion to gather the data and based on factors such as how tight your crop, low resolution and use of icon mods can all make it difficult to determine the correct values. If possible, try leaving more space around the tooltip, using a higher resolution (1080p should be fine) or update your icon pack or use a different pack.</p>
+      <p>The technology involved uses machine learning image recongintion to gather the data and based on factors such as how tight your crop, low resolution and use of icon mods can all make it difficult to determine the correct values.</p>
+      <p>If possible, try leaving more space around the tooltip, using a higher resolution (1080p should be fine) or update your icon pack or use a different pack.</p>
       <p>Icon packs are a difficult problem to solve, but it has been tested with <a href="https://sentsu.itch.io/foxhole-ui-label-icons">Sentsu's UI Label Icons</a> and <a href="https://thewindowsuser92.itch.io/foxhole-vanilla-item-icons">Vanilla Item Icons</a> and minimal issues have been noticed. If you have clean screenshots you are will to share, feel free to open a github issue or message bagofdoom on discord.</p>
     </div>
   </div>
@@ -119,6 +121,8 @@
         margin-right: 4px;
         overflow: hidden;
         height: 42px;
+        padding: 2px;
+        transition: all 0.2s ease-in-out;
     }
     #pyramid .depleted{ background-color:red; }
     #pyramid .depleted:hover{ background-color:darkred; }
@@ -136,6 +140,11 @@
         display: inline-block;
         text-align: center;
         font-weight: bold;
+    }
+    #pyramid-footnote{
+        font-size: 0.8em;
+        text-align: center;
+        margin-top: 1em;
     }
     form{text-align:center;}
     .render{ margin: 20px auto; }
@@ -169,6 +178,19 @@
     a:hover{text-decoration:none;}
     input[type=file]{padding:8px;margin:0 auto 12px auto;}
     input[type=file]:hover{background:#222;}
+
+    /* Parka */
+    #pyramid div.item[title="Caoivish Parka"]::after{
+      display: block;
+        content: "*";
+        color: #66bee1;
+      float: right;
+      margin-left: -20px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    span.snow{color: #66bee1;font-weight:bold;font-size:2em;vertical-align:middle;}
+
   </style>
 </body>
 </html>
