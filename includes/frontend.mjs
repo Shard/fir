@@ -39,21 +39,10 @@ export async function init(resources, icon_model_url, quantity_model_url) {
   // 82DK Stockpile tracking
   document.querySelector('.copy-stockpile').addEventListener('click', () => {
     const stockpile = stockpiles[0];
-    console.log('stockpile', stockpiles[0])
-    console.log('defs', copyDefs);
-    console.log(res.CATALOG)
-    //return;
     let text = '';
-    console.log(stockpile)
+    console.log('stockpile', stockpile)
     copyDefs.forEach(function([SheetName, CodeName]) {
-      //console.log(CodeName);
-      /*if(CodeName){ return; }
-      const result = res.CATALOG.find(e => e.DisplayName.toLowerCase() == SheetName.toLowerCase())
-      if(!result){ return; }
-      console.log(SheetName, result.CodeName)
-      return;*/
       const details = res.CATALOG.find(e => e.CodeName == CodeName);
-
       if(!details){
         text += "x\n";
         console.warn('No details found for', SheetName, CodeName);
@@ -78,6 +67,16 @@ export async function init(resources, icon_model_url, quantity_model_url) {
       document.querySelector('#pyramid').classList.add('filter-full');
     } else {
       document.querySelector('#pyramid').classList.remove('filter-full');
+    }
+  });
+  document.querySelector('a[href="#help"]').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelector('#help').classList.toggle('hidden');
+  });
+  document.querySelector('#help').addEventListener('click', (e) => {
+    e.preventDefault();
+    if(e.target.id == 'help') {
+      document.querySelector('#help').classList.toggle('hidden');
     }
   });
 
@@ -509,7 +508,7 @@ function outputTotals() {
     [['ATGrenadeW,StickyBomb', 60], ['GreenAsh', 100], ['FirstAidKit', 30], ['TraumaKit', 30], ['BloodPlasma', 150], ['MedicUniformW', 30]],
     [['HEGrenade', 80], ['GasMask', 60], ['GasMaskFilter', 100], ['SMGW', 60], ['SMGAmmo', 160], ['GrenadeW', 80], ['WorkWrench', 20], ['SnowUniformW', 20]],
     [['RpgW,RPGTW', 15], ['RpgAmmo', 75], ['ATRPGTW,ATRifleW', 15], ['ATRPGAmmo,ATRifleAmmo', 60], ['Tripod', 20], ['Shovel', 20], ['AmmoUniformW', 30]],
-    [['MGTW', 10], ['MGAmmo', 60], ['RifleLongW', 30], ['Bayonet', 60], ['GrenadeAdapter', 20], ['Radio', 25], ['Binoculars', 20], ['ATAmmo', 60]],
+    [['MGW,MGTW', 10], ['MGAmmo', 60], ['RifleLongW', 30], ['Bayonet', 60], ['GrenadeAdapter', 20], ['Radio', 25], ['Binoculars', 20], ['ATAmmo', 60]],
     [['Mortar', 15], ['MortarAmmo', 100], ['MortarAmmoFL', 100], ['MortarAmmoSH', 50], ['ATRPGTW', 10], ['LightTankAmmo', 100], ['TankUniformW', 30]],
     [['AssaultRifleW', 30], ['AssaultRifleAmmo', 80], ['TankMine', 50], ['BarbedWireMaterials', 40], ['SandbagMaterials',  40],  ['SatchelChargeW', 40], ['SmokeGrenade', 40], ['ScoutUniformW', 15]],
   ];

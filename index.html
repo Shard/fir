@@ -27,7 +27,7 @@
 <body>
   <h2>Foxhole Pyramid Report</h2>
   <form>
-    <p>From the ingame map, Take a screenshot of the base inventory tooltip you want to supply.</p>
+    <p>From the ingame map, Take a screenshot of the base inventory tooltip you want to supply. <a href='#help'>Help!</a></p>
     <label>
       <input accept="image/*" type="file" multiple>
     </label>
@@ -35,9 +35,9 @@
   <div class='top-menu'>
     <button class='copy-stockpile'>82dk copy</button>
     <button class="reset-pyramid">Reset</button>
-    <label class='filter-full'>Filter Oversupplied<input name='filter-full' type='checkbox'></label>
+    <label class='filter-full'>Filter<input name='filter-full' type='checkbox'></label>
     <select name='definition'>
-      <option disabled>Pyramid Definition</option>
+      <option disabled>Pyramids</option>
       <option value='fmat'>FMAT</option>
       <option value='fmatBasic'>FMAT Basic</option>
     </select>
@@ -62,12 +62,46 @@
     <p>Suggestions and issues can be posted on <a href="https://github.com/Shard/fir/issues">github</a></p>
     <p><a href="https://www.foxholegame.com/">Foxhole</a> and it's IP is owned by <a href="https://www.siegecamp.com/">Siege Camp</a></p>
   </footer>
+  <div id="help" class='hidden'>
+    <div>
+      <h2>Help</h2>
+      <h3>What am i looking at?</h3>
+      <p>The supply pyramid represents the basics needs of any frontline Relic or Bunker Base that is expected to see active combat. Items that are displayed higher are cosnidered higher priority and should be supplied first if available.</p>
+      <p>The number displayed depends on the format selected, but by default represents the amount of items left to deliver once a valid screenshot has been provided.</p>
+      <p>Not every item is displayed as it either too niche or cannot fit in a dunne truck such as firetrucks or emplacements.</p>
+      <h3>It's not working!</h3>
+      <p>The technology involved uses machine learning image recongintion to gather the data and based on factors such as how tight your crop, low resolution and use of icon mods can all make it difficult to determine the correct values. If possible, try leaving more space around the tooltip, using a higher resolution (1080p should be fine) or update your icon pack or use a different pack.</p>
+      <p>Icon packs are a difficult problem to solve, but it has been tested with <a href="https://sentsu.itch.io/foxhole-ui-label-icons">Sentsu's UI Label Icons</a> and <a href="https://thewindowsuser92.itch.io/foxhole-vanilla-item-icons">Vanilla Item Icons</a> and minimal issues have been noticed. If you have clean screenshots you are will to share, feel free to open a github issue or message bagofdoom on discord.</p>
+    </div>
+  </div>
   <style>
     body{
         background: black;
         color: white;
         font-family: sans-serif;
     }
+    #help{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+    }
+    #help > div{
+        background: #222;
+        padding: 1em;
+        border-radius: 0.5em;
+        margin: 3em;
+        max-height: 80%;
+        max-width: 1024px;
+        overflow: auto;
+    }
+    #help.hidden{ display: none; }
     h2{margin:0;}
     #pyramid {
       display: flex;
@@ -130,7 +164,7 @@
     footer p{
         margin: 0 0 2px 0;
     }
-    a{ background:black; color: lightblue; }
+    a{  color: lightblue; }
     a:visted{ color: lightblue; }
     a:hover{text-decoration:none;}
     input[type=file]{padding:8px;margin:0 auto 12px auto;}
