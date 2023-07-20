@@ -28,7 +28,7 @@
   <h2>Foxhole Pyramid Report</h2>
   <form>
     <p>From the ingame map, Take a screenshot of the base inventory tooltip you want to supply. <a href='#help'>Help!</a></p>
-    <label>
+    <label class="upload-screenshot">
       <input accept="image/*" type="file" multiple>
     </label>
   </form>
@@ -87,6 +87,11 @@
         background: black;
         color: white;
         font-family: sans-serif;
+    }
+    .upload-screenshot{
+        max-width: 250px;
+        display: block;
+        margin: 0 auto;
     }
     #help{
         position: absolute;
