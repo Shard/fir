@@ -69,6 +69,10 @@ export async function init(resources, icon_model_url, quantity_model_url) {
       document.querySelector('#pyramid').classList.remove('filter-full');
     }
   });
+  if(document.querySelector('input[name=filter-full]').checked){
+    document.querySelector('#pyramid').classList.add('filter-full');
+  }
+
   document.querySelector('a[href="#help"]').addEventListener('click', (e) => {
     e.preventDefault();
     document.querySelector('#help').classList.toggle('hidden');
