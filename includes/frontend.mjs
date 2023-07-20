@@ -588,10 +588,12 @@ function outputTotals() {
       itemDiv.title = itemDiv.title.trim().slice(0, -2).trim();
 
       // Status
-      if(total < desired / 2) {
+      if(total < desired / 4) {
         itemDiv.classList.add('depleted');
-      } else if (total < desired) {
+      } else if (total < desired / 2) {
         itemDiv.classList.add('low');
+      } else if (total < desired) {
+        itemDiv.classList.add('medium');
       } else {
         itemDiv.classList.add('full');
       }

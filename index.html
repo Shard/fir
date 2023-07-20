@@ -43,15 +43,21 @@
     </select>
     <select name='format'>
       <option disabled>Metric Format</option>
+      <option value='crates'>Crates Required</option>
       <option value='required'>Items Required</option>
       <option value='current'>Current Items</option>
-      <option value='crates'>Crates Required</option>
       <option value='current-desired'>Current / Desired</option>
     </select>
   </div>
   <div class='processing-status'>Processed: <span>0 of 0</span></div>
   <div id="pyramid"></div>
   <div id="pyramid-footnote">
+    <div class='color-legend'>
+      <span style="color:darkred;">◼</span> 0-25% |
+      <span style="color:darkorange;">◼</span> 25-50% |
+      <span style="color:goldenrod;">◼</span> 50-100% |
+      <span style="color:darkgreen;">◼</span> 100%+
+    </div>
     <span class='snow'>*</span> Only supply when snowing in region.
   </div>
   <div style="display:flex;">
@@ -124,12 +130,15 @@
         padding: 2px;
         transition: all 0.2s ease-in-out;
     }
-    #pyramid .depleted{ background-color:red; }
-    #pyramid .depleted:hover{ background-color:darkred; }
-    #pyramid .low{ background-color:orange; }
-    #pyramid .low:hover{ background-color:darkorange; }
-    #pyramid .full{ background-color:green; }
-    #pyramid .full:hover{ background-color:darkgreen; }
+    
+    #pyramid .depleted{ background-color:darkred; }
+    #pyramid .depleted:hover{ background-color:red; }
+    #pyramid .low{ background-color:darkorange; }
+    #pyramid .low:hover{ background-color:orange; }
+    #pyramid .medium{ background-color:goldenrod; }
+    #pyramid .medium:hover{ background-color:gold; }
+    #pyramid .full{ background-color:darkgreen; }
+    #pyramid .full:hover{ background-color:green; }
     #pyramid.empty .item{ background-color:#191919; }
     #pyramid.empty .item:hover{ background-color:#333; }
     #pyramid > div canvas, #pyramid > div img{float:left;}
@@ -146,6 +155,8 @@
         text-align: center;
         margin-top: 1em;
     }
+    .color-legend span{font-size: 36px;font-weight: bold;vertical-align: middle;line-height: 16px;}
+    
     form{text-align:center;}
     .render{ margin: 20px auto; }
     body:last-child::after{display:none;}
