@@ -511,7 +511,7 @@ function outputTotals() {
     [['RifleLightW,RifleW', 100], ['RifleAmmo', 200], ['Bandages', 200]],
     [['ATGrenadeW,StickyBomb', 60], ['GreenAsh', 100], ['FirstAidKit', 30], ['TraumaKit', 30], ['BloodPlasma', 150], ['MedicUniformW', 30]],
     [['HEGrenade', 80], ['GasMask', 60], ['GasMaskFilter', 100], ['SMGW', 60], ['SMGAmmo', 160], ['GrenadeW', 80], ['WorkWrench', 20], ['SnowUniformW', 20]],
-    [['RpgW,RPGTW', 15], ['RpgAmmo', 75], ['ATRPGTW,ATRifleW', 15], ['ATRPGAmmo,ATRifleAmmo', 60], ['Tripod', 20], ['Shovel', 20], ['AmmoUniformW', 30]],
+    [['RpgW,RPGTW', 15], ['RpgAmmo', 75], ['ATRPGW,ATRifleW', 15], ['ATRPGIndirectAmmo,ATRifleAmmo', 60], ['Tripod', 20], ['Shovel', 20], ['AmmoUniformW', 30]],
     [['MGW,MGTW', 10], ['MGAmmo', 60], ['RifleLongW', 30], ['Bayonet', 60], ['GrenadeAdapter', 20], ['Radio', 25], ['Binoculars', 20], ['ATAmmo', 60]],
     [['Mortar', 15], ['MortarAmmo', 100], ['MortarAmmoFL', 100], ['MortarAmmoSH', 50], ['ATRPGTW', 10], ['LightTankAmmo', 100], ['TankUniformW', 30]],
     [['AssaultRifleW', 30], ['AssaultRifleAmmo', 80], ['TankMine', 50], ['BarbedWireMaterials', 40], ['SandbagMaterials',  40],  ['SatchelChargeW', 40], ['SmokeGrenade', 40], ['ScoutUniformW', 15]],
