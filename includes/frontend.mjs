@@ -1,4 +1,5 @@
 import Screenshot from './screenshot.mjs'
+import { copyDefs } from './dk.mjs'
 
 let res = {};
 let ICON_MODEL_URL = "";
@@ -27,6 +28,97 @@ export async function init(resources, icon_model_url, quantity_model_url) {
       res[key] = results[index++];
     }
   });
+  outputTotals();
+  document.querySelector('.reset-pyramid').addEventListener('click', () => {
+    stockpiles = [];
+    imagesProcessed = 0;
+    imagesTotal = 0;
+    document.querySelector('.render').innerHTML = '';
+    outputTotals();
+  });
+  // 82DK Stockpile tracking
+  document.querySelector('.copy-stockpile').addEventListener('click', () => {
+    const stockpile = stockpiles[0];
+    let text = '';
+    console.log('stockpile', stockpile)
+    copyDefs.forEach(function([SheetName, CodeName]) {
+      const details = res.CATALOG.find(e => e.CodeName == CodeName);
+      if(!details){
+        text += "x\n";
+        console.warn('No details found for', SheetName, CodeName);
+        return;
+      }
+      const inventory = stockpile.contents.find(e => e.CodeName == CodeName && e.isCrated === true);
+      //console.log(CodeName, inventory);
+      const amountStored = inventory ? inventory.quantity : 0;
+      text += amountStored + "\n";
+    });
+    copyTextToClipboard(text.trim());
+  })
+
+  document.querySelector('select[name=format]').addEventListener('change', () => {
+    outputTotals();
+  });
+  document.querySelector('select[name=definition]').addEventListener('change', () => {
+    outputTotals();
+  });
+  document.querySelector('input[name=filter-full]').addEventListener('change', (e) => {
+    if(e.target.checked) {
+      document.querySelector('#pyramid').classList.add('filter-full');
+    } else {
+      document.querySelector('#pyramid').classList.remove('filter-full');
+    }
+  });
+  if(document.querySelector('input[name=filter-full]').checked){
+    document.querySelector('#pyramid').classList.add('filter-full');
+  }
+
+  document.querySelector('a[href="#help"]').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelector('#help').classList.toggle('hidden');
+  });
+  document.querySelector('#help').addEventListener('click', (e) => {
+    e.preventDefault();
+    if(e.target.id == 'help') {
+      document.querySelector('#help').classList.toggle('hidden');
+    }
+  });
+
+}
+
+function fallbackCopyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Fallback: Copying text command was ' + msg);
+  } catch (err) {
+    console.error('Fallback: Oops, unable to copy', err);
+  }
+
+  document.body.removeChild(textArea);
+}
+function copyTextToClipboard(text) {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    console.log('Async: Copying to clipboard was successful!');
+  }, function(err) {
+    console.error('Async: Could not copy text: ', err);
+  });
 }
 
 export function registerDefaultListeners() {
@@ -38,7 +130,13 @@ export function registerDefaultListeners() {
   window.addEventListener('paste', function(event) {
     const files = event.clipboardData.files || [];
     const images = Array.prototype.filter.call(files, f => f.type.startsWith('image/'));
-    gtag('event', 'select_content', {content_type: 'paste_screenshots', item_id: `ss_count_${images.length}`});
+    if(images.length === 0) {
+      return;
+    }
+    stockpiles = [];
+    imagesProcessed = 0;
+    imagesTotal = 0;
+
     addImages(images);
   });
 }
@@ -52,44 +150,17 @@ export function addInputListener(input) {
     imagesProcessed = 0;
     imagesTotal = 0;
 
-    document.querySelector('div.render').innerHTML = '';
-
     const files = Array.from(this.files).sort(function(a, b) {
       // Consistent ordering based on when each screenshot was captured
       return a.lastModified - b.lastModified;
     });
 
-    gtag('event', 'select_content', {content_type: 'open_screenshots', item_id: `ss_count_${files.length}`});
     addImages(files);
-  });
-}
-
-export function addDownloadCollageListener(downloadCollage) {
-  downloadCollage.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_collage'});
-    const collage = document.querySelector('div.render');
-    html2canvas(collage, {
-      width: collage.scrollWidth,
-      height: collage.scrollHeight,
-      windowWidth: collage.scrollWidth + 16,
-      windowHeight: collage.scrollHeight + 16,
-    }).then(function(canvas) {
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL();
-
-      const time = new Date();
-      link.download = time.toISOString() + "_" + 'foxhole-inventory-collage.png';
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
   });
 }
 
 export function addDownloadTotalsListener(downloadTotals) {
   downloadTotals.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_totals'});
     const totals = document.querySelector('div.report');
     html2canvas(totals, {
       width: totals.scrollWidth,
@@ -112,7 +183,6 @@ export function addDownloadTotalsListener(downloadTotals) {
 
 export function addDownloadTSVListener(downloadTSV) {
   downloadTSV.addEventListener('click', function() {
-    gtag('event', 'select_content', {content_type: 'download', item_id: 'download_tsv'});
     const items = [[
       'Stockpile Title',
       'Stockpile Name',
@@ -264,156 +334,21 @@ export function getAppendGoogleRows(format="gapi") {
   return rows;
 }
 
-export async function addAppendGoogleListener(appendGoogle) {
-  appendGoogle.addEventListener('click', async function() {
-    gtag('event', 'select_content', {content_type: 'append_google', item_id: 'append_google'});
-
-    const authPromise = new Promise(function(resolve, reject) {
-      tokenClient.callback = (resp) => {
-        if (resp.error !== undefined) {
-          reject(resp);
-        }
-        //console.log('gapi.client access token: ' + JSON.stringify(gapi.client.getToken()));
-        resolve(resp);
-      };
-    });
-    tokenClient.requestAccessToken();
-    await authPromise;
-
-    const pickerData = await new Promise(function(resolve, reject) {
-      const picker = new google.picker.PickerBuilder()
-        .addView(google.picker.ViewId.SPREADSHEETS)
-        .enableFeature(google.picker.Feature.NAV_HIDDEN)
-        .setOAuthToken(gapi.client.getToken().access_token)
-        .setDeveloperKey(gIds().apiKey)
-        .setAppId(gIds().appId)
-        .setCallback(function(data) {
-          if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
-            resolve(data);
-          } else if (data[google.picker.Response.ACTION] == google.picker.Action.CANCEL) {
-            reject();
-          }
-        })
-        .build();
-      picker.setVisible(true);
-    });
-    const spreadsheetId = pickerData[google.picker.Response.DOCUMENTS][0][google.picker.Document.ID];
-    //console.log(pickerData);
-    //console.log(pickerData[google.picker.Response.DOCUMENTS][0][google.picker.Document.ID]);
-
-    const spreadsheetResponse = await gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: spreadsheetId,
-    });
-    //console.log(spreadsheetResponse);
-
-    const sheetName = 'fir';
-    const sheet = spreadsheetResponse.result.sheets.find( s => s.properties.title == sheetName);
-    const columns = [
-      'Export Time',
-      'Screenshot Time',
-      'Structure Type',
-      'Stockpile Name',
-      'Stockpile Title',
-      'CodeName',
-      'Name',
-      'Quantity',
-      'Crated?',
-      'ID',
-    ].map( c => stringValue(c) );
-
-    let rows = getAppendGoogleRows();
-
-    let sheetId;
-    if (sheet) {
-      sheetId = sheet.properties.sheetId;
-    }
-    else {
-      sheetId = Math.floor(Math.random() * 1000000000);
-
-      const addSheetResponse = await gapi.client.sheets.spreadsheets.batchUpdate({
-        spreadsheetId: spreadsheetId,
-      }, {
-        requests: [{
-          addSheet: {
-            properties: {
-              sheetId,
-              title: sheetName,
-              index: 0,
-              gridProperties: {
-                frozenRowCount: 1,
-                rowCount: 2,
-                columnCount: columns.length + 1,
-              },
-            },
-          },
-        }, {
-          appendCells: {
-            sheetId: sheetId,
-            fields: '*',
-            rows: [{
-              values: columns,
-            }],
-          },
-        }]
-      });
-      //console.log(addSheetResponse);
-    }
-
-    const appendCellsResponse = await gapi.client.sheets.spreadsheets.batchUpdate({
-      spreadsheetId: spreadsheetId,
-    }, {
-      requests: [{
-        appendCells: {
-          sheetId: sheetId,
-          fields: '*',
-          rows,
-        },
-      }],
-    });
-    //console.log(appendCellsResponse);
-  });
-
-  await Promise.all([
-    new Promise((res, rej) => gapi.load('client', {callback: res, onerror: rej})),
-    new Promise((res, rej) => gapi.load('picker', {callback: res, onerror: rej})),
-  ]);
-  await gapi.client.init({}).then(function() {
-    gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
-  });
-
-  const tokenClient = await new Promise((resolve, reject) => {
-    try {
-      resolve(google.accounts.oauth2.initTokenClient({
-          client_id: gIds().clientId,
-          scope: 'https://www.googleapis.com/auth/drive.file',
-          //prompt: 'consent',
-      }));
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
 function addImages(files) {
   imagesTotal += files.length;
 
   const collage = document.querySelector('div.render');
-  document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
+  document.querySelector('.processing-status span').textContent = imagesProcessed + " of " + imagesTotal;
 
   files.forEach(function(file) {
     const container = document.createElement('div');
-    const label = document.createElement('span');
-    label.textContent = file.name;
-    label.contentEditable = true;
-    label.spellcheck = false;
-    container.appendChild(label);
 
     const image = document.createElement('img');
     image.style.display = 'none';
-    image.addEventListener('load', getProcessImage(label, file.lastModified), { once: true });
+    image.addEventListener('load', getProcessImage('@@UNUSED', file.lastModified), { once: true });
     image.src = URL.createObjectURL(file);
     container.appendChild(image);
-
+    collage.innerHTML = '<span>Processing Screenshot...</span>';
     collage.appendChild(container);
   });
 }
@@ -439,7 +374,7 @@ function getProcessImage(label, lastModified) {
     return processImage.call(this, label, lastModified);
   };
 
-  async function processImage(label, lastModified) {
+  async function processImage(_label, lastModified) {
     URL.revokeObjectURL(this.src);
 
     const canvas = document.createElement('canvas');
@@ -451,21 +386,21 @@ function getProcessImage(label, lastModified) {
 
     const stockpile = await Screenshot.process(canvas, ICON_MODEL_URL, res.ICON_CLASS_NAMES, QUANTITY_MODEL_URL, res.QUANTITY_CLASS_NAMES);
     if (stockpile) {
+      document.querySelector('div.render span').remove();
       this.src = stockpile.box.canvas.toDataURL();
-      stockpile.label = label;
       stockpile.lastModified = lastModified;
       stockpiles.push(stockpile);
     }
 
     this.style.display = '';
     ++imagesProcessed;
-    document.querySelector('li span').textContent = imagesProcessed + " of " + imagesTotal;
+    document.querySelector('.processing-status span').textContent = imagesProcessed + " of " + imagesTotal;
 
     if (imagesProcessed == imagesTotal) {
       window.stockpiles = stockpiles;
       window.stockpilesJSON = JSON.stringify(stockpiles.map(function(s) {
         return {
-          file: s.label.textContent.trim(),
+          file: 'base',
           box: {
             x: s.box.x,
             y: s.box.y,
@@ -559,6 +494,115 @@ function outputTotals() {
     return (categoryOrder[a] || Infinity) - (categoryOrder[b] || Infinity);
   });
 
+  // Pyramid  start
+  const format = document.querySelector('select[name=format]').value;
+  const definition = document.querySelector('select[name=definition]').value;
+  const pyramid = document.querySelector('div#pyramid');
+  pyramid.innerHTML = '';
+  if(Object.keys(totals).length === 0){
+    pyramid.classList.add('empty');
+  } else {
+    pyramid.classList.remove('empty');
+  }
+
+  const pyramidDefs = {}
+  pyramidDefs.fmat = [
+    [['SoldierSupplies', 200], ['Cloth', 1500]],
+    [['RifleLightW,RifleW', 100], ['RifleAmmo', 200], ['Bandages', 200]],
+    [['ATGrenadeW,StickyBomb', 60], ['GreenAsh', 100], ['FirstAidKit', 30], ['TraumaKit', 30], ['BloodPlasma', 150], ['MedicUniformW', 30]],
+    [['HEGrenade', 80], ['GasMask', 60], ['GasMaskFilter', 100], ['SMGW', 60], ['SMGAmmo', 160], ['GrenadeW', 80], ['WorkWrench', 20], ['SnowUniformW', 20]],
+    [['RpgW,RPGTW', 15], ['RpgAmmo', 75], ['ATRPGW,ATRifleW', 15], ['ATRPGIndirectAmmo,ATRifleAmmo', 60], ['Tripod', 20], ['Shovel', 20], ['AmmoUniformW', 30]],
+    [['MGW,MGTW', 10], ['MGAmmo', 60], ['RifleLongW', 30], ['Bayonet', 60], ['GrenadeAdapter', 20], ['Radio', 25], ['Binoculars', 20], ['ATAmmo', 60]],
+    [['Mortar', 15], ['MortarAmmo', 100], ['MortarAmmoFL', 100], ['MortarAmmoSH', 50], ['ATRPGTW', 10], ['LightTankAmmo', 100], ['TankUniformW', 30]],
+    [['AssaultRifleW', 30], ['AssaultRifleAmmo', 80], ['TankMine', 50], ['BarbedWireMaterials', 40], ['SandbagMaterials',  40],  ['SatchelChargeW', 40], ['SmokeGrenade', 40], ['ScoutUniformW', 15]],
+  ];
+  pyramidDefs.fmatBasic = [
+    [['SoldierSupplies', 100], ['Cloth', 1000]],
+    [['RifleW', 60], ['RifleAmmo', 120], ['Bandages', 100]],
+    [['StickyBomb', 30], ['GreenAsh', 40], ['FirstAidKit', 10], ['TraumaKit', 10], ['BloodPlasma', 50], ['MedicUniformW', 15]],
+    [['HEGrenade', 40], ['GasMask', 20], ['GasMaskFilter', 40], ['SMGW', 20], ['SMGAmmo', 80], ['GrenadeW', 40], ['WorkWrench', 10]],
+  ];
+
+  const pyramidDef = pyramidDefs[definition] || pyramidDefs.fmat;
+  pyramidDef.map(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.classList.add('row');
+
+    row.map(([CodeNames, desired]) => {
+      // Items (including groups of items)
+      let desiredCrates = desired;
+      const itemNames = CodeNames.split(',');
+      const itemDiv = document.createElement('div');
+      itemDiv.classList.add('item');
+
+      let total = 0;
+      let totalCrates = 0;
+      for (const itemName of itemNames) {
+        let item = totals[itemName];
+        const catalogItem = res.CATALOG.find(e=>e.CodeName == itemName);
+        const crateAmount = catalogItem.ItemDynamicData.QuantityPerCrate
+
+        // Fallback item definition and image
+        if(!item) {
+          if (!catalogItem) {
+            console.error(`${itemName} missing from catalog`);
+            continue;
+          }
+          item = {
+            category: (catalogItem.ItemCategory || '').replace(/^EItemCategory::/, ''),
+            name: catalogItem.DisplayName || itemName,
+            CodeName: itemName,
+            total: 0
+          };
+        }
+        desiredCrates = Math.ceil(desired / crateAmount);
+        total += item.total;
+        totalCrates += Math.floor(total / crateAmount)
+        itemDiv.classList.add(item.category);
+        itemDiv.title = itemDiv.title + `${item.name} or\n`
+
+        // Icon Image
+        if( item.collection ){
+          itemDiv.appendChild(item.collection[0].iconBox.canvas)
+        } else {
+          const fallbackImg = document.createElement('img');
+          fallbackImg.src = `./foxhole/inferno/icons/${item.CodeName}.png`;
+          fallbackImg.width = 42;
+          fallbackImg.height = 42;
+          fallbackImg.alt = item.name;
+          itemDiv.appendChild(fallbackImg);
+        }
+      }
+      // Finish Icon Grouping
+      const labelSpan = document.createElement('span');
+      if(format === 'required'){
+        labelSpan.textContent = `${desired - total}`;
+      } else if(format === 'crates'){
+        labelSpan.textContent = `${Math.ceil((desiredCrates - totalCrates))}c`;
+      } else if(format === 'current'){
+        labelSpan.textContent = `${total}`;
+      } else {
+        labelSpan.textContent = `${total} / ${desired}`;
+      }
+      itemDiv.appendChild(labelSpan);
+      itemDiv.title = itemDiv.title.trim().slice(0, -2).trim();
+
+      // Status
+      if(total < desired / 4) {
+        itemDiv.classList.add('depleted');
+      } else if (total < desired / 2) {
+        itemDiv.classList.add('low');
+      } else if (total < desired) {
+        itemDiv.classList.add('medium');
+      } else {
+        itemDiv.classList.add('full');
+      }
+      rowDiv.appendChild(itemDiv);
+    });
+    pyramid.appendChild(rowDiv);
+  });
+  // Pyramid  end
+
   const report = document.querySelector('div.report');
   report.innerHTML = '';
   for (const category of sortedCategories) {
@@ -602,7 +646,7 @@ function outputTotals() {
       quantity.textContent = type.total;
       cell.appendChild(quantity);
 
-      cell.appendChild(type.collection[0].iconBox.canvas);
+      //cell.appendChild(type.collection[0].iconBox.canvas);
 
       const name = document.createElement('div');
       name.textContent = type.name;

@@ -34,8 +34,4 @@ await front.init(res, ICON_MODEL_URL, QUANTITY_MODEL_URL);
 
   front.registerDefaultListeners();
   front.addInputListener(input);
-  front.addDownloadCollageListener(downloadCollage);
-  front.addDownloadTotalsListener(downloadTotals);
-  front.addDownloadTSVListener(downloadTSV);
-  await front.addAppendGoogleListener(appendGoogle);
 })();

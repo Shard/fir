@@ -1,29 +1,26 @@
-# Foxhole Inventory Report (fir)
+# Foxhole Pyramid Report
+Forked from [Foxhole Inventory Report](https://github.com/GICodeWarrior/fir), which mostly just wraps their excellent work with a different UI.
 
-This tool prepares [Foxhole](https://www.foxholegame.com/about-foxhole) stockpile screenshots into a visual report and machine-readable numbers.
+This tool analyses screenshots from [Foxhole](https://www.foxholegame.com/about-foxhole) containing tooltips of the base you are looking to supply using the Logi Pyramid as a basis.
 
-1. Screenshot multiple inventories from the map view in-game.  Do this in the order you'd like them to appear in the report.
-2. Select your screenshots in the tool.
-3. Wait for processing.
-4. Edit the titles for each inventory in the report by clicking on them.
-5. Download the result as a PNG, text report, TSV, or append to a google spreadsheet.
+1. Open the map and hover the the base you want to supply
+2. Take a screenshot
+3. Paste it into https://pyramid.82dk.net
+4. Profit
 
 ## Status
+Currently a bit of a hack around fir as a proof of concept but thanks to their solid image recognition, its fully functional and should even work with icon mods.
 
-Under development. However, it is already being used "in production" within regiment(s) for evaluation. 
+Feel free to open an issue if you notice anything not working or have a suggestion on how it can be improved.
 
 ## Development
-
 Standalone website:
 ```
 cd fir
 python3 -m http.server
 ```
 
-To build the google spreadsheet sidebar, run `./sundial/gs-build.sh` and find the files to be added to Google Apps Script in `./sundial/gs-build`.
-
 ## License
-
 All original source code and contributions available under MIT License.
 
 Catalog details and icons processed from the game Foxhole (created by [Siege Camp](https://www.siegecamp.com/)) are made available only under Fair Use.
