@@ -624,6 +624,7 @@ const searchDirectories = [
   'War/Content/Blueprints/Structures/Emplacements/',
   'War/Content/Blueprints/Structures/Facilities/',
   'War/Content/Blueprints/Structures/Rocket/',
+  'War/Content/Blueprints/Structures/Ships/',
 ];
 
 const objects = [];
@@ -649,6 +650,18 @@ for (const directory of searchDirectories) {
       const objectValues = coalesceObject(coreObject);
       //process.stderr.write(objectValues.CodeName + '\n');
 
+      //if (objectValues.CodeName == "ShipPart1") {
+      //  process.stderr.write(objectValues.CodeName + '\n');
+      //  process.stderr.write(objectValues.DisplayName + '\n');
+      //  process.stderr.write(objectValues.Description + '\n');
+      //  process.stderr.write(objectValues.Icon + '\n');
+      //  process.stderr.write(objectValues.TechID + '\n');
+      //  process.stderr.write(objectValues.ItemCategory + '\n');
+      //  process.stderr.write(objectValues.VehicleProfileType + '\n');
+      //  process.stderr.write(objectValues.BuildLocationType + '\n');
+      //  process.stderr.write(objectValues.ProfileType + '\n');
+      //}
+
       if (objectValues.CodeName
           && objectValues.DisplayName
           && objectValues.Description
@@ -656,7 +669,8 @@ for (const directory of searchDirectories) {
           && ((objectValues.TechID || '') != 'ETechID::ETechID_MAX')
           && (objectValues.ItemCategory
               || objectValues.VehicleProfileType
-              || (objectValues.BuildLocationType == 'EBuildLocationType::ConstructionYard'))) {
+              || (objectValues.BuildLocationType == 'EBuildLocationType::ConstructionYard')
+              || (objectValues.ProfileType == 'EStructureProfileType::Shippable'))) {
         objects.push(objectValues);
       }
     } catch (e) {
