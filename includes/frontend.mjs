@@ -400,7 +400,8 @@ function getProcessImage(label, lastModified) {
       window.stockpiles = stockpiles;
       window.stockpilesJSON = JSON.stringify(stockpiles.map(function(s) {
         return {
-          file: 'base',
+          file: s.label.textContent.trim(),
+          version: window.FIR_CATALOG_VERSION,
           box: {
             x: s.box.x,
             y: s.box.y,
