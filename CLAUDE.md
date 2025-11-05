@@ -41,44 +41,12 @@
 ```
 fir/
 ├── index.html              # Main Pyramid Report interface
-├── debug.html             # Debug interface for testing
-├── specs.html             # Jasmine test runner
-├── pyramid.html           # Redirect page to production site
-├── build.sh               # Main build script for training pipeline
-├── includes/              # Frontend JavaScript modules
-│   ├── main.js           # Main entry point, version handling
-│   ├── frontend.mjs      # UI logic and event handling
-│   ├── screenshot.mjs    # Screenshot processing
-│   ├── ocr.mjs          # OCR functionality
-│   ├── dk.mjs           # Custom integration (82DK clan)
-│   ├── main.css         # Main stylesheet
-│   └── quantities/      # Quantity recognition model/data
-├── foxhole/              # Game version-specific data
-│   ├── naval-57/        # Current version (default)
-│   ├── naval-56/
-│   ├── naval/
-│   ├── inferno-52/
-│   ├── inferno/
-│   └── entrenched/
-│   └── [version]/
-│       ├── catalog.json     # Item definitions
-│       ├── classifier/      # Trained TensorFlow.js model
-│       │   ├── model.json
-│       │   └── class_names.json
-│       └── icons/          # Item icons (PNG)
-├── catalog/              # Catalog parsing and training generation
-│   ├── parse.js         # Parses game data files
-│   ├── generate_training.js  # Generates training images
-│   └── package.json
-├── trainer/              # ML model training
-│   ├── train.py         # TensorFlow training script
-│   ├── sort_json.py     # Model JSON formatter
-│   ├── Pipfile          # Python dependencies
-│   └── generate_quantities.sh
-├── spec/                 # Test suite (Jasmine)
-│   └── screenshots.js
-└── sundial/             # Google Sheets sidebar integration
-    └── gs-sidebar/
+├── build.sh                # Full training pipeline script
+├── includes/               # Frontend JS modules (main.js, frontend.mjs, screenshot.mjs, ocr.mjs)
+├── foxhole/[version]/      # Game version data (catalog.json, classifier/, icons/)
+├── catalog/                # Catalog parsing and training data generation (Node.js)
+├── trainer/                # ML model training (Python/TensorFlow)
+└── spec/                   # Jasmine test suite
 ```
 
 ## Development Workflow
@@ -295,12 +263,3 @@ cd trainer && pipenv install && pipenv run python train.py 50 rgb 0.10 0.005 ../
 4. **Mobile support**: Consider responsive design for mobile screenshots
 5. **Error handling**: Network issues, invalid screenshots, unsupported versions
 6. **User feedback**: Recognition issues are common, provide helpful error messages
-
-## Glossary
-
-- **Logi**: Logistics (in Foxhole community)
-- **FMAT**: Full Military Arsenal Template (standard supply pyramid)
-- **Dunne Truck**: Common Foxhole transport vehicle (capacity limitations)
-- **Relic/Bunker Base**: Types of bases in Foxhole
-- **Tooltip**: Hover UI element showing base inventory
-- **82DK**: Clan that created this fork (BagOfDoom)
