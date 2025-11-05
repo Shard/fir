@@ -2,39 +2,38 @@
 
 ## Project Overview
 
-**Foxhole Pyramid Report** is a web-based tool that analyzes screenshots from the game [Foxhole](https://www.foxholegame.com/) to help players determine supply needs for bases. The tool uses machine learning (image recognition) and OCR to extract inventory data from in-game base tooltips and displays supply priorities using a "Logi Pyramid" visualization.
-
-**Forked from**: [Foxhole Inventory Report](https://github.com/GICodeWarrior/fir) - This is a UI wrapper around their excellent image recognition work.
+**Foxhole Pyramid Report** is a pyramid UI built on top of the [Foxhole Inventory Report (fir)](https://github.com/GICodeWarrior/fir) screenshot analysis tool. It displays Foxhole base supply needs using the "Logi Pyramid" visualization system.
 
 **Live site**: https://pyramid.82dk.net
 
 ### How It Works
-1. Players hover over a base on the in-game map
-2. Take a screenshot of the inventory tooltip
-3. Paste it into the web interface
-4. ML model recognizes items and quantities
-5. Tool displays what needs to be supplied using the Logi Pyramid system
+1. Players take a screenshot of a base inventory tooltip from Foxhole
+2. Paste it into the web interface
+3. fir's ML model recognizes items and quantities (not maintained in this fork)
+4. Pyramid UI displays what needs to be supplied, prioritized by importance
+
+**Development focus**: This fork primarily develops the pyramid UI/UX. The underlying ML/OCR functionality is from the upstream fir project.
 
 ## Tech Stack
 
-### Frontend
-- **HTML/CSS/JavaScript**: Vanilla ES6 modules, no framework
-- **TensorFlow.js**: For running trained image classification models in-browser
-- **Tesseract.js**: OCR for text extraction from screenshots
-- **html2canvas**: For screenshot rendering/export
-- **Google APIs**: Optional Google Sheets integration
+### Frontend (Primary Development Area)
+- **Vanilla JavaScript**: ES6 modules, no framework
+- **HTML/CSS**: Inline styles in index.html
+- **Dependencies** (loaded via CDN):
+  - TensorFlow.js 4.19.0 - Runs image recognition models
+  - Tesseract.js 3.0.2 - OCR for quantities
+  - html2canvas 1.4.0 - Screenshot export
+  - Google APIs - Optional Sheets integration
 
-### Backend/Training
-- **Python**: Model training with TensorFlow/Keras
-  - Uses `pipenv` for dependency management
-  - Training script: `trainer/train.py`
-- **Node.js**: Catalog parsing and training data generation
-  - Scripts in `catalog/` directory
+### ML/Training Pipeline (Rarely Modified)
+Inherited from upstream fir project:
+- `catalog/` - Node.js scripts for parsing game data
+- `trainer/` - Python/TensorFlow model training
+- `build.sh` - Full training pipeline
 
 ### Deployment
-- Static site - no server required
-- Development: `python3 -m http.server`
-- Production: Deployed to https://pyramid.82dk.net
+- Static site: `python3 -m http.server` for local dev
+- Production: https://pyramid.82dk.net
 
 ## Project Structure
 
@@ -51,36 +50,18 @@ fir/
 
 ## Development Workflow
 
-### Running the Development Server
+### Running Locally
 ```bash
 cd fir
 python3 -m http.server
 # Visit http://localhost:8000
 ```
 
-### Full Build Pipeline
-The `build.sh` script runs the complete training pipeline:
-
-1. **Parse Catalog**: Extract item data from game files
-2. **Generate Training Data**: Create training images with variations
-3. **Save Icon Catalog**: Copy reference icons
-4. **Build Classifier**: Train TensorFlow model and convert to TensorFlow.js
-
-```bash
-./build.sh /path/to/foxhole/data/files
-```
-
-**Requirements for build.sh**:
-- Node.js + npm (for catalog parsing)
-- Python 3 + pipenv (for model training)
-- TensorFlow with GPU support (optional but recommended)
-- ImageMagick (for image processing)
-- optipng (for PNG optimization)
-
 ### Game Version Management
-- Current default version: `naval-57` (set in `includes/main.js`)
-- Supported versions listed in `VALID_VERSIONS` set
-- Version can be selected via URL parameter: `?v=naval-56`
+- Default version: `naval-57` (set in `includes/main.js`)
+- Supported versions in `VALID_VERSIONS` set
+- URL parameter: `?v=naval-56` to test different versions
+- Version data in `foxhole/[version]/` (catalog.json, classifier/, icons/)
 
 ## Key Features
 
@@ -107,85 +88,53 @@ The `build.sh` script runs the complete training pipeline:
 - **Snow indicator**: Items only needed when snowing (e.g., Caoivish Parka)
 - **Multiple screenshot support**: Upload multiple screenshots to aggregate data
 
-## Machine Learning Details
+## Recognition System (Inherited from fir)
 
-### Icon Classification Model
-- **Input**: 64x64 pixel game item icons
-- **Training**: TensorFlow/Keras CNN
-- **Output**: TensorFlow.js graph model
-- **Classes**: Item names from catalog.json
-- **Supports icon mods**: Tested with Sentsu's UI Label Icons and Vanilla Item Icons
+The image recognition is handled by upstream fir code:
+- **Icon recognition**: TensorFlow.js model (64x64 icons) → `foxhole/[version]/classifier/`
+- **Quantity OCR**: Tesseract.js → `includes/ocr.mjs`
+- **Training**: `build.sh` pipeline (rarely used) - requires game data files, Python, Node.js
 
-### Quantity Recognition
-- **Input**: Cropped quantity text from tooltips
-- **Method**: OCR (Tesseract.js) + classifier
-- **Classes**: Defined in `includes/quantities/class_names.json`
+Recognition issues are usually upstream fir problems, not pyramid UI bugs.
 
-### Training Data Generation
-- Multiple variations per item:
-  - Different icon packs
-  - Rotations
-  - Color variations
-  - Noise injection
-- Parallel processing using all CPU cores
-- Output: JPG training images (quality 89)
+## Common Development Tasks
 
-## Common Tasks for AI Assistants
+### Modifying the Pyramid UI
+- **Pyramid definitions**: `includes/frontend.mjs` - FMAT, FMAT Basic
+- **Layout/styles**: Inline CSS in `index.html` (lines 85-210)
+- **Item display**: Color coding, filtering, format options
+- **Custom features**: 82DK copy button, snow indicators
 
-### Adding Support for a New Game Version
-1. Update `VALID_VERSIONS` set in `includes/main.js`
-2. Run build.sh with new version name
-3. Ensure game data files are available for that version
-
-### Modifying the Pyramid
-1. Edit pyramid definitions in frontend code
-2. Definitions likely stored in `includes/frontend.mjs` or data files
-3. Test with sample screenshots
-
-### Debugging Recognition Issues
-1. Use `debug.html` to test individual screenshots
-2. Check `specs.html` for test suite results
-3. Look at training data quality in `catalog/training/`
-4. Retrain model if necessary with more/better samples
-
-### Updating Item Catalog
-1. Get latest Foxhole game data files
-2. Run `catalog/parse.js` to generate new catalog.json
-3. Regenerate training data
-4. Retrain classifier model
-
-### Frontend Changes
-- Main UI logic: `includes/frontend.mjs`
-- Screenshot handling: `includes/screenshot.mjs`
-- OCR logic: `includes/ocr.mjs`
-- Styles are inline in `index.html` (lines 85-210)
-- Consider extracting styles to separate CSS file for maintainability
+### Key Files for UI Work
+- `includes/frontend.mjs` - Main UI logic, pyramid rendering, event handling
+- `includes/screenshot.mjs` - Screenshot processing, multi-upload
+- `index.html` - HTML structure and inline styles
+- `includes/dk.mjs` - 82DK-specific integrations
 
 ### Testing
-- Test framework: Jasmine 5.1.1
-- Test specs: `spec/screenshots.js`
-- Run tests: Open `specs.html` in browser
+- Manual: Upload screenshots via local dev server
+- Automated: `specs.html` (Jasmine tests)
+- Debug mode: `debug.html` for isolated testing
+
+### Adding a New Game Version
+1. Add version to `VALID_VERSIONS` in `includes/main.js`
+2. Get trained model from upstream fir (or contact maintainer)
+3. Place in `foxhole/[version]/` directory
+4. Test with version parameter: `?v=new-version`
 
 ## Important Notes
 
-### For Code Changes
+### Development Constraints
 - **No build system**: Direct file editing, no bundler/transpiler
-- **Browser compatibility**: Modern browsers only (ES6 modules)
-- **Static deployment**: All resources must be static files
-- **Large model files**: Classifier models can be several MB
+- **ES6 modules**: Modern browsers only
+- **Static site**: All resources must be static files
+- **CDN dependencies**: TensorFlow.js, Tesseract.js loaded at runtime
 
-### For Model Training
-- **GPU recommended**: Training can take significant time on CPU
-- **Data quality critical**: Screenshot quality affects recognition accuracy
-- **Icon mod support**: Model needs training data from all supported icon packs
-- **Version-specific**: Each game version needs its own trained model
-
-### Known Issues/Limitations
-- Recognition accuracy depends on screenshot quality
-- High resolution recommended (1080p+)
+### Known Limitations
+- Recognition accuracy varies (upstream fir issue, not UI bug)
+- High resolution screenshots work best (1080p+)
 - Icon mods can affect recognition
-- Some items intentionally excluded (too niche, don't fit in transport)
-- Tight crops can reduce accuracy - leave space around tooltip
+- Some items excluded from pyramids (too niche or don't fit in Dunne trucks)
 
 ## Contributing
 
@@ -196,61 +145,40 @@ Issues and suggestions: https://github.com/Shard/fir/issues
 - Original code: MIT License
 - Game data/icons: Fair Use only (owned by Siege Camp)
 
-## External Dependencies
+## Quick Reference
 
-### CDN Resources (loaded at runtime)
-- html2canvas 1.4.0
-- Tesseract.js 3.0.2
-- TensorFlow.js 4.19.0
-- Google APIs (for Sheets integration)
-
-### Python Dependencies (training)
-See `trainer/Pipfile`:
-- tensorflow
-- tensorflowjs
-- nvidia-cudnn-cu12 (for GPU)
-- pillow (image processing)
-
-### Node Dependencies (catalog)
-See `catalog/package.json` for parsing dependencies
-
-## Useful Commands
-
+### Development
 ```bash
-# Development server
-python3 -m http.server
-
-# Full rebuild (requires game data)
-./build.sh /path/to/foxhole/data
-
-# Parse catalog only
-cd catalog && npm install && node parse.js <game_data_path> ../foxhole/naval-57/catalog.json
-
-# Generate training images only
-cd catalog && node generate_training.js <game_data_path> ../foxhole/naval-57/catalog.json training 0 1
-
-# Train model only
-cd trainer && pipenv install && pipenv run python train.py 50 rgb 0.10 0.005 ../catalog/training/
+# Local dev server
+python3 -m http.server  # then visit http://localhost:8000
 
 # Run tests
 # Open specs.html in browser
 ```
 
-## Architecture Decisions
+### CDN Dependencies
+- html2canvas 1.4.0 - Screenshot export
+- Tesseract.js 3.0.2 - OCR
+- TensorFlow.js 4.19.0 - Model inference
+- Google APIs - Sheets integration
 
-### Why No Framework?
-- Keep it simple and lightweight
-- Minimize dependencies
-- Easy to deploy as static site
+## Design Philosophy
+
+### Vanilla JS + Static Deployment
+- No build system, no framework - keeps it simple
+- Easy to deploy (just static files)
 - Fast load times
+- All processing in-browser (privacy - screenshots never leave user's machine)
 
-### Why TensorFlow.js?
-- Run ML models entirely in-browser
-- No server infrastructure needed
-- Works offline after initial load
-- Privacy - screenshots never leave user's browser
+### Multiple Game Versions
+- Game updates change items/icons, requires new models
+- Each version in `foxhole/[version]/` with its own classifier
+- Versions rarely added (requires upstream fir training pipeline)
 
-### Why Multiple Game Versions?
-- Game updates change item sets and icons
-- Historical support for older game versions
-- Each version needs independent trained model
+## Development Tips
+
+1. **Test with real screenshots**: Use actual Foxhole screenshots, recognition quality varies
+2. **UI changes only**: Avoid modifying recognition code (`screenshot.mjs`, `ocr.mjs`) - that's upstream fir
+3. **Pyramid definitions**: Main customization point is `includes/frontend.mjs`
+4. **Icon mods**: Different players use different icon packs, test accordingly
+5. **Mobile/responsive**: Consider mobile screenshot uploads
