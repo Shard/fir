@@ -132,6 +132,7 @@ Recognition issues are usually upstream fir problems, not pyramid UI bugs.
 
 ### Known Limitations
 - Recognition accuracy varies (upstream fir issue, not UI bug)
+- Airborne-63 keeps the pre-ONNX TensorFlow classifier for pyramid compatibility; the seven later fort-part catalog entries have icons and fallback metadata but require the ONNX runtime migration for direct recognition.
 - High resolution screenshots work best (1080p+)
 - Icon mods can affect recognition
 - Some items excluded from pyramids (too niche or don't fit in Dunne trucks)
@@ -158,8 +159,8 @@ python3 -m http.server  # then visit http://localhost:8000
 
 ### CDN Dependencies
 - html2canvas 1.4.0 - Screenshot export
-- Tesseract.js 3.0.2 - OCR
-- TensorFlow.js 4.19.0 - Model inference
+- Tesseract.js 7.0.0 - OCR
+- TensorFlow.js 4.22.0 plus the WASM backend - Model inference
 - Google APIs - Sheets integration
 
 ## Design Philosophy
@@ -178,7 +179,8 @@ python3 -m http.server  # then visit http://localhost:8000
 ## Development Tips
 
 1. **Test with real screenshots**: Use actual Foxhole screenshots, recognition quality varies
-2. **UI changes only**: Avoid modifying recognition code (`screenshot.mjs`, `ocr.mjs`) - that's upstream fir
+2. **UI changes**: Keep the pyramid and 82DK behavior in the fork frontend.
 3. **Pyramid definitions**: Main customization point is `includes/frontend.mjs`
 4. **Icon mods**: Different players use different icon packs, test accordingly
-5. **Mobile/responsive**: Consider mobile screenshot uploads
+5. **Recognition resyncs**: Keep `screenshot.mjs`, `ocr.mjs`, and their model assets synchronized with upstream; the pyramid adapter in `screenshot.mjs` preserves the fork's frontend data shape.
+6. **Mobile/responsive**: Consider mobile screenshot uploads
