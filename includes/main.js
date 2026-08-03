@@ -7,14 +7,19 @@ const VALID_VERSIONS = new Set([
   'naval',
   'naval-56',
   'naval-57',
+  'infantry-59',
+  'infantry-60',
+  'infantry-61',
+  'airborne-63',
 ]);
 
-const DEFAULT_VERSION = 'naval-57';
+const DEFAULT_VERSION = 'airborne-63';
 const VERSION = (new URLSearchParams(location.search)).get('v') || DEFAULT_VERSION;
 if (!VALID_VERSIONS.has(VERSION)) {
   console.log(`Invalid version ${VERSION}`);
   location.search = '';
 }
+window.FIR_CATALOG_VERSION = VERSION;
 console.log(`Loading resources for "${VERSION}"`);
 
 const res = {

@@ -1,6 +1,6 @@
 import Screenshot from '../includes/screenshot.mjs';
 
-const CURRENT_VERSION = 'naval-57';
+const CURRENT_VERSION = 'infantry-61';
 
 const JASMINE_TIMEOUT = 60000;
 const ICON_MODEL_URL = `./foxhole/${CURRENT_VERSION}/classifier/model.json`;
@@ -22,6 +22,9 @@ const VERSION_HISTORY = [
   'naval',
   'naval-56',
   'naval-57',
+  'infantry-59',
+  'infantry-60',
+  'infantry-61',
 ];
 const VERSION_CHANGES = {
   'inferno': {
@@ -63,6 +66,17 @@ const VERSION_CHANGES = {
     Explosive: null, // Icon changed
     HeavyExplosive: null, // Icon changed
     Freighter: null, // Icon changed
+  },
+  'infantry-59': {
+    SoldierSupplies: null, // Icon Changed
+    Shotgun: null, // Removed (two new shotguns)
+  },
+  'infantry-60': {
+    BunkerSupplies: null,
+    SniperRifleAmmo: null,
+  },
+  'infantry-61': {
+    HERocketAmmo: null, // Damage type changed
   },
 };
 

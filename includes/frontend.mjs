@@ -345,7 +345,7 @@ function addImages(files) {
 
     const image = document.createElement('img');
     image.style.display = 'none';
-    image.addEventListener('load', getProcessImage('@@UNUSED', file.lastModified), { once: true });
+    image.addEventListener('load', getProcessImage(file.name, file.lastModified), { once: true });
     image.src = URL.createObjectURL(file);
     container.appendChild(image);
     collage.innerHTML = '<span>Processing Screenshot...</span>';
@@ -374,7 +374,7 @@ function getProcessImage(label, lastModified) {
     return processImage.call(this, label, lastModified);
   };
 
-  async function processImage(_label, lastModified) {
+  async function processImage(label, lastModified) {
     URL.revokeObjectURL(this.src);
 
     const canvas = document.createElement('canvas');
@@ -388,6 +388,8 @@ function getProcessImage(label, lastModified) {
     if (stockpile) {
       document.querySelector('div.render span').remove();
       this.src = stockpile.box.canvas.toDataURL();
+      stockpile.label = document.createElement('span');
+      stockpile.label.textContent = label;
       stockpile.lastModified = lastModified;
       stockpiles.push(stockpile);
     }
@@ -400,7 +402,8 @@ function getProcessImage(label, lastModified) {
       window.stockpiles = stockpiles;
       window.stockpilesJSON = JSON.stringify(stockpiles.map(function(s) {
         return {
-          file: 'base',
+          file: s.label.textContent.trim(),
+          version: window.FIR_CATALOG_VERSION,
           box: {
             x: s.box.x,
             y: s.box.y,
@@ -541,7 +544,7 @@ function outputTotals() {
       for (const itemName of itemNames) {
         let item = totals[itemName];
         const catalogItem = res.CATALOG.find(e=>e.CodeName == itemName);
-        const crateAmount = catalogItem.ItemDynamicData.QuantityPerCrate
+        const crateAmount = (catalogItem.ItemDynamicData || {}).QuantityPerCrate || 3;
 
         // Fallback item definition and image
         if(!item) {
@@ -567,7 +570,7 @@ function outputTotals() {
           itemDiv.appendChild(item.collection[0].iconBox.canvas)
         } else {
           const fallbackImg = document.createElement('img');
-          fallbackImg.src = `./foxhole/inferno/icons/${item.CodeName}.png`;
+          fallbackImg.src = `./foxhole/${window.FIR_CATALOG_VERSION}/icons/${item.CodeName}.png`;
           fallbackImg.width = 42;
           fallbackImg.height = 42;
           fallbackImg.alt = item.name;

@@ -9,7 +9,7 @@ then
 fi
 
 warLocation=$(cd "${1}"; pwd)
-version='naval-57'
+version='infantry-61'
 
 parseCatalog() {
   echo "Parsing catalog. (downloading / updating npm packages)"
@@ -29,11 +29,6 @@ generateIconTraining() {
   cpus=$(nproc)
   rangeMax=$(expr ${cpus} - 1)
   seq 0 $rangeMax | xargs -I@ -n1 -P$cpus node generate_training.js "${warLocation}" ../foxhole/${version}/catalog.json training @ $cpus
-
-  # Textured Icons mod uses the same icon for both FieldMGAmmo and MGAmmo. This
-  # confuses the model, and the icon looks more like MGAmmo, so ignore the
-  # FieldMGAmmo icon.
-  rm training/FieldMGAmmo*/textured-icons-*.png || true
 
   ./find-duplicates.sh $cpus
 
@@ -76,9 +71,10 @@ buildClassifier() {
 
   CUDNN_PATH=$(dirname $(pipenv run python -c "import nvidia.cudnn;print(nvidia.cudnn.__file__)"))
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CUDNN_PATH/lib
+  export TF_FORCE_GPU_ALLOW_GROWTH=true
 
   rm -r model-tf || true
-  pipenv run python train.py 50 rgb 0.10 0.005 ../catalog/training/
+  pipenv run python train.py 100 rgb 0.20 0.005 ../catalog/training/
 
   echo "Training complete, assembling results."
   rm -r ../foxhole/${version}/classifier || true
@@ -87,7 +83,11 @@ buildClassifier() {
 
   #pipenv run python train.py 16 grayscale 0.05 0.05 quantity_training
 
-  pipenv run tensorflowjs_converter --input_format tf_saved_model --output_format=tfjs_graph_model model-tf ../foxhole/${version}/classifier
+  cd convert
+  pipenv clean
+  pipenv install
+  pipenv run tensorflowjs_converter --input_format tf_saved_model --output_format=tfjs_graph_model ../model-tf ../../foxhole/${version}/classifier
+  cd ..
 
   pipenv run python sort_json.py ../foxhole/${version}/classifier/model.json
 
